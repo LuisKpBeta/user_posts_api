@@ -1,0 +1,25 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "root",
+    "database": "api_desafio",
+    "host": "localhost",
+    "port": "5432",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "root",
+    "database": "api_desafio",
+    "host": "localhost",
+    "port": "5432"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "root",
+    "database": "api_desafio",
+    "host": "localhost",
+    "port": "5432",
+    "dialect": "postgres"
+  }
+}
