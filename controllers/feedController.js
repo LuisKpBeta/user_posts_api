@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator/check");
 const Post = require("../models/index").post;
+
 exports.getPosts = async (req, res, next) => {
   try {
     const { page } = req.query;
@@ -34,7 +35,7 @@ exports.createPosts = async (req, res, next) => {
     const post = await Post.create({
       title,
       content,
-      creator_id: 1
+      creator_id: req.userId
     });
     console.log(post);
     return res.status(201).json({
@@ -68,11 +69,17 @@ exports.getPost = async (req, res, next) => {
 exports.updatePost = async (req, res, next) => {
   const errors = validationResult(req);
   try {
+    if (req.userId != req.body.creator_id) {
+      const error = new Error("Not authorized");
+      error.statusCode = 422;
+      throw error;
+    }
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 422;
       throw error;
     }
+
     const { postId } = req.params;
     const { title, content } = req.body;
     const post = await Post.update(
@@ -101,6 +108,11 @@ exports.updatePost = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
   const errors = validationResult(req);
   try {
+    if (req.userId != req.body.creator_id) {
+      const error = new Error("Not authorized");
+      error.statusCode = 422;
+      throw error;
+    }
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 422;

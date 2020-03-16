@@ -22,6 +22,7 @@ app.use((error, req, res, next) => {
   console.log("at middleware" + error);
   const status = error.statusCode || 500;
   const message = error.message;
-  res.status(status).json({ message });
+  const data = error.data;
+  res.status(status).json({ message, data });
 });
 app.listen(3000);
