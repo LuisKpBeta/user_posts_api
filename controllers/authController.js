@@ -44,7 +44,7 @@ exports.login = async (req, res, next) => {
       throw error;
     }
     const token = await jwt.sign(
-      { email: user.email, id: user.id },
+      { name: user.name, email: user.email, id: user.id },
       "myprivatekey",
       { expiresIn: "1h" }
     );

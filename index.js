@@ -4,7 +4,7 @@ const app = express();
 const path = require("path");
 const feedRouter = require("./routes/feed");
 const authRouter = require("./routes/auth");
-
+const socket = require("./socket");
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
@@ -18,6 +18,7 @@ app.use((req, res, next) => {
 });
 app.use("/feed", feedRouter);
 app.use("/auth", authRouter);
+
 app.use((error, req, res, next) => {
   console.log("at middleware" + error);
   const status = error.statusCode || 500;
@@ -25,4 +26,8 @@ app.use((error, req, res, next) => {
   const data = error.data;
   res.status(status).json({ message, data });
 });
-app.listen(3000);
+const server = app.listen(3000);
+io = socket.init(server);
+io.on("connection", socket => {
+  console.log("ok");
+});

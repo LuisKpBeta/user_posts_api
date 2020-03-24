@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator/check");
 const Post = require("../models/index").post;
-
+const io = require("../socket");
 exports.getPosts = async (req, res, next) => {
   try {
     const { page } = req.query;
@@ -8,7 +8,8 @@ exports.getPosts = async (req, res, next) => {
 
     const posts = await Post.findAll({
       limit: perPage,
-      offset: (page - 1) * perPage
+      offset: (page - 1) * perPage,
+      order: [["createdAt", "DESC"]]
     });
     if (!posts) {
       const error = new Error("Could not find post");
@@ -37,7 +38,10 @@ exports.createPosts = async (req, res, next) => {
       content,
       creator_id: req.userId
     });
-    console.log(post);
+    io.getIO.emit("posts", {
+      action: "create",
+      post: { ...post, creator: { id: req.userId, name: req.name } }
+    });
     return res.status(201).json({
       message: "Post created",
       post
@@ -93,7 +97,10 @@ exports.updatePost = async (req, res, next) => {
         }
       }
     );
-    console.log(post);
+    io.getIO.emit("posts", {
+      action: "update",
+      post: { ...post, creator: { id: req.userId, name: req.name } }
+    });
     return res.status(201).json({
       message: "Post updated",
       post
@@ -123,6 +130,10 @@ exports.deletePost = async (req, res, next) => {
       where: {
         id: postId
       }
+    });
+    io.getIO.emit("posts", {
+      action: "delete",
+      post: postId
     });
     return res.status(201).json({
       message: "Post deleted"
