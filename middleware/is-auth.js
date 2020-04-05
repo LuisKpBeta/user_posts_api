@@ -9,15 +9,9 @@ module.exports = (req, res, next) => {
   const token = authorization.split(" ")[1];
   try {
     const decodedToken = jwt.verify(token, "myprivatekey");
+    req.userId = decodedToken.id;
+    next();
   } catch (error) {
-    error = 500;
     throw error;
   }
-  if (!decodedToken) {
-    const error = new Error("Not authenticated");
-    error.statusCode = 401;
-    throw error;
-  }
-  req.userId = decodedToken.id;
-  next();
 };

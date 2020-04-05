@@ -6,8 +6,8 @@ exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
   try {
     if (!errors.isEmpty()) {
-      const error = new Error("validation failed");
-      error.statusCode = 422;
+      const error = new Error(errors.array()[0].msg);
+      error.statusCode = 400;
       error.data = errors.array();
       throw error;
     }
@@ -17,15 +17,19 @@ exports.signup = async (req, res, next) => {
     await User.create({ email, password: hashPassword, name });
     return res.status(201).json({ message: "User created" });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     next(error);
   }
 };
 exports.login = async (req, res, next) => {
-  const { email, password } = req.body.email;
+  const { email, password } = req.body;
+  const errors = validationResult(req);
   try {
+    if (!errors.isEmpty()) {
+      const error = new Error(errors.array()[0].msg);
+      error.statusCode = 400;
+      error.data = errors.array();
+      throw error;
+    }
     let user = await User.findOne({
       raw: true,
       where: {
@@ -50,9 +54,6 @@ exports.login = async (req, res, next) => {
     );
     res.status(200).json({ token, userId: user.id });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     next(error);
   }
 };

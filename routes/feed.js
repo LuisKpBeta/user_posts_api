@@ -3,12 +3,8 @@ const { check } = require("express-validator");
 const feedController = require("../controllers/feedController");
 const isAuth = require("../middleware/is-auth");
 const validator = [
-  check("title")
-    .trim()
-    .isLength({ min: 5 }),
-  check("content")
-    .trim()
-    .isLength({ min: 5 })
+  check("title", "Invalid Title").trim().isLength({ min: 5 }),
+  check("content", "Invalid text for content").trim().isLength({ min: 5 }),
 ];
 feedRouter.get("/posts", isAuth, feedController.getPosts);
 feedRouter.post("/posts", isAuth, validator, feedController.createPosts);

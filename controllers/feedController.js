@@ -3,24 +3,16 @@ const Post = require("../models/index").post;
 const io = require("../socket");
 exports.getPosts = async (req, res, next) => {
   try {
-    const { page } = req.query;
+    const { page = 1 } = req.query;
     const perPage = 5;
 
     const posts = await Post.findAll({
       limit: perPage,
       offset: (page - 1) * perPage,
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
     });
-    if (!posts) {
-      const error = new Error("Could not find post");
-      error.statusCode = 404;
-      throw error;
-    }
     return res.status(200).json({ posts });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     return next(error);
   }
 };
@@ -28,28 +20,29 @@ exports.createPosts = async (req, res, next) => {
   const errors = validationResult(req);
   try {
     if (!errors.isEmpty()) {
-      const error = new Error("Validation failed");
-      error.statusCode = 422;
+      const error = new Error(errors.array()[0].msg);
+      error.statusCode = 400;
       throw error;
     }
     const { title, content } = req.body;
-    const post = await Post.create({
+    const newPost = await Post.create({
       title,
       content,
-      creator_id: req.userId
+      creator_id: req.userId,
     });
-    io.getIO.emit("posts", {
+    let socketData = {
       action: "create",
-      post: { ...post, creator: { id: req.userId, name: req.name } }
-    });
+      post: {
+        ...newPost.dataValues,
+        creator: { id: req.userId, name: req.name },
+      },
+    };
+    io.getIO().emit("posts", socketData);
     return res.status(201).json({
       message: "Post created",
-      post
+      post: newPost,
     });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     return next(error);
   }
 };
@@ -64,9 +57,6 @@ exports.getPost = async (req, res, next) => {
     }
     return res.status(200).json({ post });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     return next(error);
   }
 };
@@ -75,12 +65,12 @@ exports.updatePost = async (req, res, next) => {
   try {
     if (req.userId != req.body.creator_id) {
       const error = new Error("Not authorized");
-      error.statusCode = 422;
+      error.statusCode = 401;
       throw error;
     }
     if (!errors.isEmpty()) {
-      const error = new Error("Validation failed");
-      error.statusCode = 422;
+      const error = new Error(errors.array()[0].msg);
+      error.statusCode = 400;
       throw error;
     }
 
@@ -89,59 +79,46 @@ exports.updatePost = async (req, res, next) => {
     const post = await Post.update(
       {
         title,
-        content
+        content,
       },
       {
         where: {
-          id: postId
-        }
+          id: postId,
+        },
       }
     );
-    io.getIO.emit("posts", {
+    io.getIO().emit("posts", {
       action: "update",
-      post: { ...post, creator: { id: req.userId, name: req.name } }
+      post: { ...post.dataValues, creator: { id: req.userId, name: req.name } },
     });
     return res.status(201).json({
       message: "Post updated",
-      post
     });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     return next(error);
   }
 };
 exports.deletePost = async (req, res, next) => {
-  const errors = validationResult(req);
   try {
     if (req.userId != req.body.creator_id) {
       const error = new Error("Not authorized");
-      error.statusCode = 422;
-      throw error;
-    }
-    if (!errors.isEmpty()) {
-      const error = new Error("Validation failed");
-      error.statusCode = 422;
+      error.statusCode = 401;
       throw error;
     }
     const { postId } = req.params;
     await Post.destroy({
       where: {
-        id: postId
-      }
+        id: postId,
+      },
     });
-    io.getIO.emit("posts", {
+    io.getIO().emit("posts", {
       action: "delete",
-      post: postId
+      post: postId,
     });
     return res.status(201).json({
-      message: "Post deleted"
+      message: "Post deleted",
     });
   } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
     return next(error);
   }
 };

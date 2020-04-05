@@ -1,7 +1,7 @@
 const socket = require("socket.io");
 let io;
 
-exports.init = httpServer => {
+exports.init = (httpServer) => {
   io = socket(httpServer);
   return io;
 };

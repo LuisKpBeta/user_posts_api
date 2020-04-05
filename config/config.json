@@ -5,14 +5,17 @@
     "database": "api_desafio",
     "host": "localhost",
     "port": "5432",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "logging": false
   },
   "test": {
     "username": "postgres",
     "password": "root",
     "database": "api_desafio",
     "host": "localhost",
-    "port": "5432"
+    "port": "5432",
+    "dialect": "postgres",
+    "logging": false
   },
   "production": {
     "username": "postgres",
@@ -20,6 +23,7 @@
     "database": "api_desafio",
     "host": "localhost",
     "port": "5432",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "logging": false
   }
 }
