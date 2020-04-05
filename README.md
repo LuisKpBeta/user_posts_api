@@ -82,7 +82,7 @@ An API for a simple Social Media, where users can public posts and see what othe
 * Run migrations for create tables
 ### Tests
 Application was tested using Jest library 
-[Image of Tests coverage](https://github.com/LuisCarlosb3/user_posts_api/blob/master/coverage.png)
+![Image of Tests coverage](https://github.com/LuisCarlosb3/user_posts_api/blob/master/coverage.png)
 ### Usage
 ```
 npm install
